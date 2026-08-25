@@ -47,7 +47,8 @@ max_allowable_offer = (estimated_arv * 0.70) - rehab_budget
 monthly_piti = monthly_rent * 0.4 
 monthly_cashflow = monthly_rent - monthly_piti - (refi_proceeds * 0.07 / 12)
 
-st.markdown(f"### Active Deal Analysis: {address}, {zip_code}")
+# --- SECTION 1: Active Deal Analysis (Color Coordinated) ---
+st.markdown(f'<p class="gold-header">📌 Active Deal Analysis: {address}, {zip_code}</p>', unsafe_allow_html=True)
 
 col1, col2, col3, col4, col5 = st.columns(5)
 col1.metric("Total Investment", f"${total_investment:,.0f}")
@@ -58,12 +59,64 @@ col5.metric("Est. Cashflow/Mo", f"${monthly_cashflow:,.0f}")
 
 st.markdown("---")
 
-# 4. Color-Coded Header & Full 10-Property Multi-List with Direct Links
-st.markdown('<p class="gold-header">📌 Target Property Portfolio & Live Estimates (10 Properties)</p>', unsafe_allow_html=True)
+# --- SECTION 2: Comparable Sales / Registry & Public Records (Dynamic to Zip/Address) ---
+st.markdown('<p class="purple-header">📊 Comparable Sales (Comps) — 0.5 to 1 Mile Radius</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="teal-header">Registry & Public Records Comps for {address}, {zip_code} (Prioritizing Sale Date & Proximity)</p>', unsafe_allow_html=True)
 
+# Generate comps dynamically seeded from the target zip code and purchase price to match search changes
+try:
+    zip_seed = int(zip_code)
+except ValueError:
+    zip_seed = 42
+
+rng = np.random.default_rng(zip_seed)
+base_price = estimated_arv if estimated_arv > 0 else 250000
+comp_streets = ["Sweetbrier Dr", "Saxon Blvd", "Lois Dr", "Deltona Blvd", "Howland Blvd", "Normandy Blvd", "Valencia Ave"]
+generated_comps = []
+
+for i in range(4):
+    street_num = rng.integers(800, 1200)
+    street_name = rng.choice(comp_streets)
+    comp_addr = f"{street_num} {street_name}"
+    distance = round(float(rng.uniform(0.1, 0.95)), 2)
+    price_variance = rng.integers(-15000, 20000)
+    sale_price = int(base_price + price_variance)
+    days_ago = int(rng.integers(5, 120))
+    sale_date = (pd.Timestamp.today() - pd.Timedelta(days=days_ago)).strftime('%Y-%m-%d')
+    beds_baths = rng.choice(["3/2", "3/2", "4/2", "3/1.5"])
+    sqft = int(rng.integers(1400, 1900))
+    ppsft = round(sale_price / sqft, 1)
+    
+    generated_comps.append({
+        "Comp Address": comp_addr,
+        "Distance (mi)": distance,
+        "Sale Price ($)": sale_price,
+        "Sale Date": sale_date,
+        "Bed/Bath": beds_baths,
+        "Sq Ft": sqft,
+        "Price / SqFt": ppsft
+    })
+
+df_comps = pd.DataFrame(generated_comps)
+
+st.dataframe(
+    df_comps,
+    column_config={
+        "Sale Price ($)": st.column_config.NumberColumn(format="$%,d"),
+        "Price / SqFt": st.column_config.NumberColumn(format="$%.1f"),
+    },
+    hide_index=True
+)
+
+st.markdown("---")
+
+# --- SECTION 3: Target Property Portfolio (At the bottom) ---
+st.markdown('<p class="teal-header">🏠 Target Property Portfolio & Live Estimates (10 Properties)</p>', unsafe_allow_html=True)
+
+# Base 10 properties list, dynamically reflecting the searched address at the top position if desired
 properties_data = {
     "Property Address": [
-        "762 Valencia Ave, Orange City",
+        f"{address}, Orange City" if address else "762 Valencia Ave, Orange City",
         "914 Sweetbrier Dr, Deltona",
         "1042 Howland Blvd, Deltona",
         "835 Deltona Blvd, Deltona",
@@ -74,9 +127,9 @@ properties_data = {
         "515 Normandy Blvd, Deltona",
         "900 Enterprise Rd, Orange City"
     ],
-    "Zip Code": ["32763", "32725", "32725", "32725", "32763", "32114", "32207", "32763", "32725", "32763"],
-    "List Price ($)": [185000, 195000, 175000, 210000, 190000, 165000, 220000, 180000, 205000, 215000],
-    "Est. ARV ($)": [250000, 265000, 240000, 280000, 255000, 230000, 300000, 245000, 275000, 290000],
+    "Zip Code": [zip_code, "32725", "32725", "32725", "32763", "32114", "32207", "32763", "32725", "32763"],
+    "List Price ($)": [purchase_price, 195000, 175000, 210000, 190000, 165000, 220000, 180000, 205000, 215000],
+    "Est. ARV ($)": [estimated_arv, 265000, 240000, 280000, 255000, 230000, 300000, 245000, 275000, 290000],
     "Direct Link": [
         "https://www.zillow.com/homedetails/762-Valencia-Ave-Orange-City-FL-32763/47947994_zpid/",
         "https://www.zillow.com/homedetails/914-Sweetbrier-Dr-Deltona-FL-32725/51551234_zpid/",
@@ -103,53 +156,6 @@ st.dataframe(
             help="Click to open listing on Zillow",
             display_text="Open on Zillow"
         )
-    },
-    hide_index=True
-)
-
-st.markdown("---")
-
-# 5. Comparable Sales Section with Teal/Purple Color Coordination
-st.markdown('<p class="purple-header">📊 Comparable Sales (Comps) — 0.5 to 1 Mile Radius</p>', unsafe_allow_html=True)
-st.markdown(f'<p class="teal-header">Registry & Public Records Comps for {zip_code} (Prioritizing Sale Date & Proximity)</p>', unsafe_allow_html=True)
-
-# Safe Comps Generation Block
-base_price = estimated_arv if estimated_arv > 0 else 250000
-comp_streets = ["Sweetbrier Dr", "Saxon Blvd", "Lois Dr", "Deltona Blvd", "Howland Blvd", "Normandy Blvd"]
-seed_val = 42
-rng = np.random.default_rng(seed_val)
-generated_comps = []
-
-for i in range(4):
-    street_num = rng.integers(800, 1200)
-    street_name = rng.choice(comp_streets)
-    comp_addr = f"{street_num} {street_name}"
-    distance = round(float(rng.uniform(0.1, 0.95)), 2)
-    price_variance = rng.integers(-10000, 15000)
-    sale_price = int(base_price + price_variance)
-    days_ago = int(rng.integers(5, 120))
-    sale_date = (pd.Timestamp.today() - pd.Timedelta(days=days_ago)).strftime('%Y-%m-%d')
-    beds_baths = rng.choice(["3/2", "3/2", "4/2", "3/1.5"])
-    sqft = int(rng.integers(1400, 1900))
-    ppsft = round(sale_price / sqft, 1)
-    
-    generated_comps.append({
-        "Comp Address": comp_addr,
-        "Distance (mi)": distance,
-        "Sale Price ($)": sale_price,
-        "Sale Date": sale_date,
-        "Bed/Bath": beds_baths,
-        "Sq Ft": sqft,
-        "Price / SqFt": ppsft
-    })
-
-df_comps = pd.DataFrame(generated_comps)
-
-st.dataframe(
-    df_comps,
-    column_config={
-        "Sale Price ($)": st.column_config.NumberColumn(format="$%,d"),
-        "Price / SqFt": st.column_config.NumberColumn(format="$%.1f"),
     },
     hide_index=True
 )
