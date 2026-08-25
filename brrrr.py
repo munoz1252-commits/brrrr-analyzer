@@ -113,8 +113,7 @@ ed_comps = []
     
     beds_baths = rng.choice(["3/2", "3/2", "4/2", "3/1.5"])
     sqft = int(rng.integers(1400, 1900))
-    ppsft = round(sale_price / sqft, 1)
-    
+    ppsft = round(sale_price / sqft, 1) 
     generated_comps.append({
         "Comp Address": comp_addr,
         "Distance (mi)": distance,
