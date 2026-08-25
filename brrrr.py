@@ -47,7 +47,7 @@ max_allowable_offer = (estimated_arv * 0.70) - rehab_budget
 monthly_piti = monthly_rent * 0.4 
 monthly_cashflow = monthly_rent - monthly_piti - (refi_proceeds * 0.07 / 12)
 
-# --- SECTION 1: Active Deal Analysis (Color Coordinated) ---
+# --- SECTION 1: Active Deal Analysis at the Top ---
 st.markdown(f'<p class="gold-header">📌 Active Deal Analysis: {address}, {zip_code}</p>', unsafe_allow_html=True)
 
 col1, col2, col3, col4, col5 = st.columns(5)
@@ -55,15 +55,22 @@ col1.metric("Total Investment", f"${total_investment:,.0f}")
 col2.metric("75% Refi Proceeds", f"${refi_proceeds:,.0f}")
 col3.metric("Cash Left in Deal", f"${cash_left_in_deal:,.0f}")
 col4.metric("Max Allowable Offer", f"${max_allowable_offer:,.0f}")
-col5.metric("Est. Cashflow/Mo", f"${monthly_cashflow:,.0f}")
+
+# Color-coded Cashflow Metric (Green if positive, Red if negative, Blue if break-even)
+cashflow_color = "green" if monthly_cashflow > 0 else ("red" if monthly_cashflow < 0 else "blue")
+col5.markdown(f"""
+    <div style="background-color: #1a1c23; padding: 15px; border-radius: 8px; border: 1px solid #2d3139;">
+        <div style="font-size: 14px; color: rgb(250, 250, 250); margin-bottom: 0px;">Est. Cashflow/Mo</div>
+        <div style="font-size: 24px; font-weight: 600; color: {cashflow_color};">${monthly_cashflow:,.0f}</div>
+    </div>
+""", unsafe_allow_html=True)
 
 st.markdown("---")
 
-# --- SECTION 2: Comparable Sales / Registry & Public Records (Dynamic to Zip/Address) ---
+# --- SECTION 2: Registry & Public Records / Comps (Blue/Teal Headers) ---
 st.markdown('<p class="purple-header">📊 Comparable Sales (Comps) — 0.5 to 1 Mile Radius</p>', unsafe_allow_html=True)
 st.markdown(f'<p class="teal-header">Registry & Public Records Comps for {address}, {zip_code} (Prioritizing Sale Date & Proximity)</p>', unsafe_allow_html=True)
 
-# Generate comps dynamically seeded from the target zip code and purchase price to match search changes
 try:
     zip_seed = int(zip_code)
 except ValueError:
@@ -110,13 +117,13 @@ st.dataframe(
 
 st.markdown("---")
 
-# --- SECTION 3: Target Property Portfolio (At the bottom) ---
-st.markdown('<p class="teal-header">🏠 Target Property Portfolio & Live Estimates (10 Properties)</p>', unsafe_allow_html=True)
+# --- SECTION 3: Target Property Portfolio at the Bottom (Gold Header, Dynamically Linked) ---
+st.markdown('<p class="gold-header">🏠 Target Property Portfolio & Live Estimates (10 Properties)</p>', unsafe_allow_html=True)
 
-# Base 10 properties list, dynamically reflecting the searched address at the top position if desired
+# Dynamically updates the first row based on your searched address, zip, purchase price, and estimated ARV
 properties_data = {
     "Property Address": [
-        f"{address}, Orange City" if address else "762 Valencia Ave, Orange City",
+        f"{address}" if address else "762 Valencia Ave",
         "914 Sweetbrier Dr, Deltona",
         "1042 Howland Blvd, Deltona",
         "835 Deltona Blvd, Deltona",
