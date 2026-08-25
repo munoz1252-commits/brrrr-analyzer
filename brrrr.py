@@ -103,8 +103,9 @@ rng = np.random.default_rng(seed_val)
 
 base_price = estimated_arv if estimated_arv > 0 else 250000
 comp_streets = ["Sweetbrier Dr", "Saxon Blvd", "Lois Dr", "Deltona Blvd", "Howland Blvd", "Normandy Blvd"]
-
-generated_comps = []
+seed_val = 42
+rng = np.random.default_rng(seed_val)
+generatseed_val = 42ed_comps = []
 for i in range(4):
     street_num = rng.integers(800, 1200)
     street_name = rng.choice(comp_streets)
