@@ -98,14 +98,10 @@ st.markdown("---")
 st.markdown('<p class="purple-header">📊 Comparable Sales (Comps) — 0.5 to 1 Mile Radius</p>', unsafe_allow_html=True)
 st.markdown(f"*Registry & Public Records Comps for {zip_code} (Prioritizing Sale Date & Proximity)*")
 
-rng = np.random.default_rng(42)
-rng = np.random.default_rng(seed_val)
-
 base_price = estimated_arv if estimated_arv > 0 else 250000
 comp_streets = ["Sweetbrier Dr", "Saxon Blvd", "Lois Dr", "Deltona Blvd", "Howland Blvd", "Normandy Blvd"]
 seed_val = 42
 rng = np.random.default_rng(seed_val)
-seed_val = 42
 ed_comps = []
 for i in range(4):
     street_num = rng.integers(800, 1200)
