@@ -1,3 +1,29 @@
+import pandas as pd
+import streamlit as st
+
+st.title("BRRRR Deal Analyzer & Investor Engine")
+
+# Property list with direct URLs
+data = {
+    "Property": ["762 Valencia Ave, Orange City"],
+    "Zip Code": ["32763"],
+    "Direct Link": ["https://www.zillow.com/homedetails/762-Valencia-Ave-Orange-City-FL-32763/47947994_zpid/"]
+}
+
+df = pd.DataFrame(data)
+
+# This renders the URL as a clickable link in Streamlit
+st.dataframe(
+    df,
+    column_config={
+        "Direct Link": st.column_config.LinkColumn(
+            "View Property",
+            help="Click to open listing",
+            display_text="Open on Zillow"
+        )
+    }
+)
+
 import streamlit as st
 import pandas as pd
 import numpy as np
