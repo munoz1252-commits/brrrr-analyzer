@@ -1,4 +1,3 @@
-# TEST EDIT
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -10,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom Styling for Dashboard Metrics and Headers
+# Custom Styling for Dashboard Metrics and Color-Coded Headers
 st.markdown("""
     <style>
     .main { background-color: #0e1117; color: #ffffff; }
@@ -59,21 +58,49 @@ col5.metric("Est. Cashflow/Mo", f"${monthly_cashflow:,.0f}")
 
 st.markdown("---")
 
-# 4. Property Link Table with LinkColumn
-st.markdown('<p class="gold-header">📌 Target Property Link</p>', unsafe_allow_html=True)
-data = {
-    "Property": [f"{address}, Orange City"],
-    "Zip Code": [zip_code],
-    "Direct Link": ["https://www.zillow.com/homedetails/762-Valencia-Ave-Orange-City-FL-32763/47947994_zpid/"]
+# 4. Color-Coded Header & Full 10-Property Multi-List with Direct Links
+st.markdown('<p class="gold-header">📌 Target Property Portfolio & Live Estimates (10 Properties)</p>', unsafe_allow_html=True)
+
+properties_data = {
+    "Property Address": [
+        "762 Valencia Ave, Orange City",
+        "914 Sweetbrier Dr, Deltona",
+        "1042 Howland Blvd, Deltona",
+        "835 Deltona Blvd, Deltona",
+        "1112 Saxon Blvd, Orange City",
+        "420 N Ridgewood Ave, Daytona Beach",
+        "1250 San Jose Blvd, Jacksonville",
+        "310 E University Ave, Orange City",
+        "515 Normandy Blvd, Deltona",
+        "900 Enterprise Rd, Orange City"
+    ],
+    "Zip Code": ["32763", "32725", "32725", "32725", "32763", "32114", "32207", "32763", "32725", "32763"],
+    "List Price ($)": [185000, 195000, 175000, 210000, 190000, 165000, 220000, 180000, 205000, 215000],
+    "Est. ARV ($)": [250000, 265000, 240000, 280000, 255000, 230000, 300000, 245000, 275000, 290000],
+    "Direct Link": [
+        "https://www.zillow.com/homedetails/762-Valencia-Ave-Orange-City-FL-32763/47947994_zpid/",
+        "https://www.zillow.com/homedetails/914-Sweetbrier-Dr-Deltona-FL-32725/51551234_zpid/",
+        "https://www.zillow.com/homedetails/1042-Howland-Blvd-Deltona-FL-32725/51555678_zpid/",
+        "https://www.zillow.com/homedetails/835-Deltona-Blvd-Deltona-FL-32725/51559999_zpid/",
+        "https://www.zillow.com/homedetails/1112-Saxon-Blvd-Orange-City-FL-32763/47941111_zpid/",
+        "https://www.zillow.com/homedetails/420-N-Ridgewood-Ave-Daytona-Beach-FL-32114/38221111_zpid/",
+        "https://www.zillow.com/homedetails/1250-San-Jose-Blvd-Jacksonville-FL-32207/44223344_zpid/",
+        "https://www.zillow.com/homedetails/310-E-University-Ave-Orange-City-FL-32763/47945555_zpid/",
+        "https://www.zillow.com/homedetails/515-Normandy-Blvd-Deltona-FL-32725/51557777_zpid/",
+        "https://www.zillow.com/homedetails/900-Enterprise-Rd-Orange-City-FL-32763/47949999_zpid/"
+    ]
 }
-df_property = pd.DataFrame(data)
+
+df_portfolio = pd.DataFrame(properties_data)
 
 st.dataframe(
-    df_property,
+    df_portfolio,
     column_config={
+        "List Price ($)": st.column_config.NumberColumn(format="$%,d"),
+        "Est. ARV ($)": st.column_config.NumberColumn(format="$%,d"),
         "Direct Link": st.column_config.LinkColumn(
             "View Property",
-            help="Click to open listing",
+            help="Click to open listing on Zillow",
             display_text="Open on Zillow"
         )
     },
@@ -82,9 +109,9 @@ st.dataframe(
 
 st.markdown("---")
 
-# 5. Comparable Sales Section
+# 5. Comparable Sales Section with Teal/Purple Color Coordination
 st.markdown('<p class="purple-header">📊 Comparable Sales (Comps) — 0.5 to 1 Mile Radius</p>', unsafe_allow_html=True)
-st.markdown(f"*Registry & Public Records Comps for {zip_code} (Prioritizing Sale Date & Proximity)*")
+st.markdown(f'<p class="teal-header">Registry & Public Records Comps for {zip_code} (Prioritizing Sale Date & Proximity)</p>', unsafe_allow_html=True)
 
 # Safe Comps Generation Block
 base_price = estimated_arv if estimated_arv > 0 else 250000
