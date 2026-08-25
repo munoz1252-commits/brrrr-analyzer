@@ -1,5 +1,6 @@
-import pandas as pd
 import streamlit as st
+import pandas as pd
+import numpy as np
 
 st.title("BRRRR Deal Analyzer & Investor Engine")
 
@@ -97,7 +98,7 @@ st.markdown("---")
 st.markdown('<p class="purple-header">📊 Comparable Sales (Comps) — 0.5 to 1 Mile Radius</p>', unsafe_allow_html=True)
 st.markdown(f"*Registry & Public Records Comps for {zip_code} (Prioritizing Sale Date & Proximity)*")
 
-seed_val = int(hashlib.md5((address + zip_code).encode()).hexdigest(), 16) % 10000
+
 rng = np.random.default_rng(seed_val)
 
 base_price = estimated_arv if estimated_arv > 0 else 250000
