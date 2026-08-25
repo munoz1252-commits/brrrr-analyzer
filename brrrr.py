@@ -1,4 +1,6 @@
-import streamlit as st
+
+
+  import streamlit as st
 import pandas as pd
 import numpy as np
 
@@ -67,7 +69,7 @@ col5.markdown(f"""
 
 st.markdown("---")
 
-# --- SECTION 2: Registry & Public Records / Comps (Blue/Teal Headers) ---
+# --- SECTION 2: Comparable Sales / Registry & Public Records (Purple Header) ---
 st.markdown('<p class="purple-header">📊 Comparable Sales (Comps) — 0.5 to 1 Mile Radius</p>', unsafe_allow_html=True)
 st.markdown(f'<p class="teal-header">Registry & Public Records Comps for {address}, {zip_code} (Prioritizing Sale Date & Proximity)</p>', unsafe_allow_html=True)
 
@@ -117,10 +119,9 @@ st.dataframe(
 
 st.markdown("---")
 
-# --- SECTION 3: Target Property Portfolio at the Bottom (Gold Header, Dynamically Linked) ---
+# --- SECTION 3: Target Property Portfolio at the Bottom (Gold Header) ---
 st.markdown('<p class="gold-header">🏠 Target Property Portfolio & Live Estimates (10 Properties)</p>', unsafe_allow_html=True)
 
-# Dynamically updates the first row based on your searched address, zip, purchase price, and estimated ARV
 properties_data = {
     "Property Address": [
         f"{address}" if address else "762 Valencia Ave",
