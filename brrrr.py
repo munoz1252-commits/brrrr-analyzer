@@ -3,6 +3,7 @@ import streamlit as st
 
 st.title("BRRRR Deal Analyzer & Investor Engine")
 
+
 # Property list with direct URLs
 data = {
     "Property": ["762 Valencia Ave, Orange City"],
