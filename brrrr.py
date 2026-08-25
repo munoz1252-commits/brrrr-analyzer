@@ -103,10 +103,6 @@ comp_streets = ["Sweetbrier Dr", "Saxon Blvd", "Lois Dr", "Deltona Blvd", "Howla
 seed_val = 42
 rng = np.random.default_rng(seed_val)
 ed_comps = []
-for i in range(4):
-    street_num = rng.integers(800, 1200)
-    street_name = rng.choice(comp_streets)
-    comp_addr = f"{street_num} {street_name}"
     
     distance = round(float(rng.uniform(0.1, 0.95)), 2)
     price_variance = rng.integers(-10000, 15000)
