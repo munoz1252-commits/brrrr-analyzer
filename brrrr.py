@@ -116,4 +116,12 @@ for i in range(4):
     })
 
 df_comps = pd.DataFrame(generated_comps)
-st.dataframe(df_comps, hide_index=True)
+
+st.dataframe(
+    df_comps,
+    column_config={
+        "Sale Price ($)": st.column_config.NumberColumn(format="$%,d"),
+        "Price / SqFt": st.column_config.NumberColumn(format="$%.1f"),
+    },
+    hide_index=True
+)
