@@ -1,3 +1,4 @@
+
 import io
 import geopandas as gpd
 import numpy as np
@@ -48,12 +49,12 @@ def apply_workspace_styling():
     st.markdown(
         """
         <style>
-            .stApp { background-color: #f8f9fa; color: #1a1a1a; }
-            h1, h2, h3, h4, h5, h6 { color: #111111 !important; }
-            p, span, label, div { color: #222222; }
-            .lead-card { background-color: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 5px solid #1976d2; margin-bottom: 10px; color: #0d47a1 !important;}
-            .comp-card { background-color: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 5px solid #388e3c; margin-bottom: 10px; color: #1b5e20 !important;}
-            .scenario-card { background-color: #fff3e0; padding: 15px; border-radius: 8px; border-left: 5px solid #f57c00; margin-bottom: 10px; color: #e65100 !important;}
+            .stApp { background-color: #0e1117; color: #fafafa; }
+            h1, h2, h3, h4, h5, h6 { color: #ffffff !important; }
+            p, span, label, div { color: #d1d5db; }
+            .lead-card { background-color: #1e3a8a; padding: 15px; border-radius: 8px; border-left: 5px solid #3b82f6; margin-bottom: 10px; color: #93c5fd !important;}
+            .comp-card { background-color: #064e3b; padding: 15px; border-radius: 8px; border-left: 5px solid #10b981; margin-bottom: 10px; color: #a7f3d0 !important;}
+            .scenario-card { background-color: #7c2d12; padding: 15px; border-radius: 8px; border-left: 5px solid #f97316; margin-bottom: 10px; color: #fed7aa !important;}
         </style>
     """,
         unsafe_allow_html=True,
