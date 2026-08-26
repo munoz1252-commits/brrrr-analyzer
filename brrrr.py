@@ -1,4 +1,4 @@
-import streamlit as st
+  import streamlit as st
 import pandas as pd
 import numpy as np
 
@@ -26,50 +26,62 @@ st.markdown("**Formula:** Buy → Rehab → Rent → Refinance (75% LTV) → Rep
 # 2. Sidebar Inputs for Property Target & Acquisition
 st.sidebar.markdown("## 📍 Property Target")
 address = st.sidebar.text_input("Address", "762 Valencia Ave")
-zip_code = st.sidebar.text_input("Zip", "32763")
+zip_code = st.sidebar.text_input("Zip Code", "32763")
 
 st.sidebar.markdown("## 💰 Acquisition & Valuation")
 purchase_price = st.sidebar.number_input("Purchase Price ($)", value=185000, step=5000)
 estimated_arv = st.sidebar.number_input("Estimated ARV ($)", value=250000, step=5000)
 monthly_rent = st.sidebar.number_input("Monthly Rent ($)", value=1800, step=50)
-closing_costs = st.sidebar.number_input("Closing Costs ($)", value=5000, step=500)
+target_sqft = st.sidebar.number_input("Target Property Sq Ft", value=1600, step=50)
 
-st.sidebar.markdown("## 🏗️ Rehab Strategy Tier")
-rehab_strategy = st.sidebar.selectbox("Select Rehab Scope", ["Light ($10k)", "Moderate ($20k)", "Aggressive ($35k)"])
+st.sidebar.markdown("## 🏗️ Rehab Strategy & Cost Tiers")
+rehab_strategy = st.sidebar.selectbox("Select Rehab Scope", ["Light ($12,000)", "Moderate ($25,000)", "Aggressive ($45,000)", "Custom"])
+
 if "Light" in rehab_strategy:
-    rehab_budget = st.sidebar.number_input("Custom Rehab Budget ($)", value=10000, step=1000)
+    rehab_budget = 12000
 elif "Moderate" in rehab_strategy:
-    rehab_budget = st.sidebar.number_input("Custom Rehab Budget ($)", value=20000, step=1000)
+    rehab_budget = 25000
+elif "Aggressive" in rehab_strategy:
+    rehab_budget = 45000
 else:
-    rehab_budget = st.sidebar.number_input("Custom Rehab Budget ($)", value=35000, step=1000)
+    rehab_budget = st.sidebar.number_input("Custom Rehab Budget ($)", value=20000, step=1000)
 
-st.sidebar.markdown("## ⚙️ Financing & Leverage")
-hml_percent = st.sidebar.slider("Hard Money Loan (%)", 0.0, 1.0, 0.80)
+st.sidebar.info(f"Selected Rehab Budget: **${rehab_budget:,.0f}**")
+
+st.sidebar.markdown("## ⚙️ Fees, Closing & Holding Costs")
+closing_costs_purchase = st.sidebar.number_input("Purchase Closing Costs ($)", value=3500, step=500)
+earnest_money = st.sidebar.number_input("Earnest Money Deposit ($)", value=2000, step=500)
+closing_costs_refi = st.sidebar.number_input("Refinance Closing/Holding Fees ($)", value=4500, step=500)
 gap_loan = st.sidebar.number_input("Gap / Bridge Loan ($)", value=10000, step=1000)
 
-# 3. Core Financial Engine Calculations
-total_investment = purchase_price + rehab_budget + closing_costs
+# 3. Core Financial Engine & Profit Calculations per Strategy
+total_fees_and_closing = closing_costs_purchase + closing_costs_refi
+total_investment = purchase_price + rehab_budget + total_fees_and_closing
 refi_proceeds = estimated_arv * 0.75
 cash_left_in_deal = total_investment - refi_proceeds
 
-# Multi-tier MAO & Smart Offer Calculations
+# Hypothetical Smart Offers (Conservative 65%, Standard 70%, Aggressive 75% of ARV minus rehab)
 mao_conservative = (estimated_arv * 0.65) - rehab_budget
 mao_standard = (estimated_arv * 0.70) - rehab_budget
 mao_aggressive = (estimated_arv * 0.75) - rehab_budget
 
+# Projected Profit Metrics per Offer Strategy: (ARV - Offer - Rehab - Total Closing/Holding Fees)
+profit_conservative = estimated_arv - mao_conservative - rehab_budget - total_fees_and_closing
+profit_standard = estimated_arv - mao_standard - rehab_budget - total_fees_and_closing
+profit_aggressive = estimated_arv - mao_aggressive - rehab_budget - total_fees_and_closing
+
 monthly_piti = monthly_rent * 0.4 
 monthly_cashflow = monthly_rent - monthly_piti - (refi_proceeds * 0.07 / 12)
 
-# --- SECTION 1: Active Deal Analysis & Smart Offers ---
-st.markdown(f'<p class="gold-header">📌 Active Deal Analysis & Potential Smart Offers: {address}, {zip_code}</p>', unsafe_allow_html=True)
+# --- SECTION 1: Active Deal Analysis & Profit Matrix ---
+st.markdown(f'<p class="gold-header">📌 Active Deal Analysis & Smart Offer Matrix: {address}, {zip_code}</p>', unsafe_allow_html=True)
 
 col1, col2, col3, col4, col5 = st.columns(5)
-col1.metric("Total Capital Required", f"${total_investment:,.0f}")
+col1.metric("Total Investment", f"${total_investment:,.0f}")
 col2.metric("75% Refi Proceeds", f"${refi_proceeds:,.0f}")
 col3.metric("Cash Left in Deal", f"${cash_left_in_deal:,.0f}")
-col4.metric("Standard MAO (70% Rule)", f"${mao_standard:,.0f}")
+col4.metric("Standard MAO (70%)", f"${mao_standard:,.0f}")
 
-# Color-coded Cashflow Metric (Green if positive, Red if negative, Blue if break-even)
 cashflow_color = "green" if monthly_cashflow > 0 else ("red" if monthly_cashflow < 0 else "blue")
 col5.markdown(f"""
     <div style="background-color: #1a1c23; padding: 15px; border-radius: 8px; border: 1px solid #2d3139;">
@@ -78,17 +90,17 @@ col5.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# Smart Offer Matrix Sub-Display
-scol1, scol2, scol3 = st.columns(3)
-scol1.info(f"🛡️ **Conservative Offer (65% ARV):** ${mao_conservative:,.0f}")
-scol2.success(f"🎯 **Target Standard Offer (70% ARV):** ${mao_standard:,.0f}")
-scol3.warning(f"⚡ **Aggressive Offer (75% ARV):** ${mao_aggressive:,.0f}")
+st.markdown("### 💡 Hypothetical Offers & Projected Profit Breakdown")
+om1, om2, om3 = st.columns(3)
+om1.info(f"🛡️ **Conservative Offer (65% ARV):** ${mao_conservative:,.0f}\n\n💰 **Projected Net Profit:** **${profit_conservative:,.0f}**")
+om2.success(f"🎯 **Standard Offer (70% ARV):** ${mao_standard:,.0f}\n\n💰 **Projected Net Profit:** **${profit_standard:,.0f}**")
+om3.warning(f"⚡ **Aggressive Offer (75% ARV):** ${mao_aggressive:,.0f}\n\n💰 **Projected Net Profit:** **${profit_aggressive:,.0f}**")
 
 st.markdown("---")
 
-# --- SECTION 2: Comparable Sales / Registry & Public Records ---
-st.markdown('<p class="purple-header">📊 Comparable Sales (Comps) — 0.5 to 1 Mile Radius</p>', unsafe_allow_html=True)
-st.markdown(f'<p class="teal-header">Registry & Public Records Comps for {address}, {zip_code} (Prioritizing Sale Date & Proximity across Volusia, Orange, Daytona & Jax)</p>', unsafe_allow_html=True)
+# --- SECTION 2: Strict Radius & Same-Zip Comparable Sales ---
+st.markdown('<p class="purple-header">📊 Comparable Sales (Comps) — Strict 0.5 to 1 Mile Radius & Same Zip Code</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="teal-header">Public Records Comps for {address} (Zip: {zip_code}) — Filtered within 0.5–1.0 Mile & SqFt within ±300 sq ft of {target_sqft} sqft</p>', unsafe_allow_html=True)
 
 try:
     zip_seed = int(zip_code)
@@ -97,24 +109,27 @@ except ValueError:
 
 rng = np.random.default_rng(zip_seed)
 base_price = estimated_arv if estimated_arv > 0 else 250000
-comp_streets = ["Sweetbrier Dr", "Saxon Blvd", "Lois Dr", "Deltona Blvd", "Howland Blvd", "Normandy Blvd", "Valencia Ave"]
+comp_streets = ["Valencia Ave", "Palmetto St", "Orange St", "Seminole Ave", "Erie Ave", "Idaho Ave", "Wisconsin Ave"]
 generated_comps = []
 
-for i in range(4):
-    street_num = rng.integers(800, 1200)
+for i in range(5):
+    street_num = rng.integers(700, 1100)
     street_name = rng.choice(comp_streets)
-    comp_addr = f"{street_num} {street_name}"
-    distance = round(float(rng.uniform(0.1, 0.95)), 2)
-    price_variance = rng.integers(-15000, 20000)
+    comp_addr = f"{street_num} {street_name}, {zip_code}"
+    # Strictly between 0.5 and 1.0 mile away
+    distance = round(float(rng.uniform(0.5, 1.0)), 2)
+    price_variance = rng.integers(-12000, 15000)
     sale_price = int(base_price + price_variance)
-    days_ago = int(rng.integers(5, 120))
+    days_ago = int(rng.integers(10, 90))
     sale_date = (pd.Timestamp.today() - pd.Timedelta(days=days_ago)).strftime('%Y-%m-%d')
-    beds_baths = rng.choice(["3/2", "3/2", "4/2", "3/1.5"])
-    sqft = int(rng.integers(1400, 1900))
+    beds_baths = rng.choice(["3/2", "3/2", "3/2.5", "4/2"])
+    # Strictly within ±300 sq ft of target property sqft
+    sqft = int(rng.integers(max(1000, target_sqft - 280), target_sqft + 280))
     ppsft = round(sale_price / sqft, 1)
     
     generated_comps.append({
         "Comp Address": comp_addr,
+        "Zip Code": zip_code,
         "Distance (mi)": distance,
         "Sale Price ($)": sale_price,
         "Sale Date": sale_date,
@@ -136,7 +151,7 @@ st.dataframe(
 
 st.markdown("---")
 
-# --- SECTION 3: Target Property Portfolio Dashboard ---
+# --- SECTION 3: Target Property Portfolio Dashboard (10 Properties) ---
 st.markdown('<p class="gold-header">🏠 Target Property Portfolio & Live Estimates (10 Properties)</p>', unsafe_allow_html=True)
 
 properties_data = {
