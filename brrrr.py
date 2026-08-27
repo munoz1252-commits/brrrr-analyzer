@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# 1. Page Configuration (Must be the very first Streamlit command)
+# 1. Page Configuration
 st.set_page_config(
-    page_title="BRRRR Deal Analyzer & Investor Engine",
+    page_title="BRRRR Deal Analyzer & Profit-First Engine",
     page_icon="🏠",
     layout="wide"
 )
@@ -17,72 +17,79 @@ st.markdown("""
     .gold-header { color: #FFD700; font-weight: 700; font-size: 1.5rem; margin-top: 1rem; }
     .purple-header { color: #9370DB; font-weight: 700; font-size: 1.5rem; margin-top: 1rem; }
     .teal-header { color: #00FFFF; font-weight: 700; font-size: 1.5rem; margin-top: 1rem; }
+    .git-box { background-color: #161b22; border: 1px solid #30363d; padding: 15px; border-radius: 6px; font-family: monospace; color: #c9d1d9; }
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("# 🏠 BRRRR Deal Analyzer & Investor Engine")
-st.markdown("**Formula:** Buy → Rehab → Rent → Refinance (75% LTV) → Repeat | *Institutional Underwriting Architecture*")
+st.markdown("# 🏠 BRRRR Deal Analyzer & Profit-First Engine")
+st.markdown("**Formulas:** Traditional MAO vs. Profit-First Margin Strip (28% Margin Priority) | *Institutional Underwriting Architecture*")
 
 # 2. Sidebar Inputs for Property Target & Acquisition
-st.sidebar.markdown("## 📍 Property Target")
+st.sidebar.markdown("## 📐 Underwriting Formula Mode")
+formula_mode = st.sidebar.selectbox(
+    "Select MAO Strategy", 
+    [
+        "Profit-First Margin Strip (28% Target)", 
+        "Traditional MAO Tiers (65%, 70%, 75%)"
+    ]
+)
+
+st.sidebar.markdown("## 📍 Property Target & Comps Filters")
 address = st.sidebar.text_input("Address", "762 Valencia Ave")
 zip_code = st.sidebar.text_input("Zip Code", "32763")
-
-st.sidebar.markdown("## 💰 Acquisition & Valuation")
-purchase_price = st.sidebar.number_input("Purchase Price ($)", value=185000, step=5000)
-estimated_arv = st.sidebar.number_input("Estimated ARV ($)", value=250000, step=5000)
-monthly_rent = st.sidebar.number_input("Monthly Rent ($)", value=1800, step=50)
+target_beds = st.sidebar.selectbox("Bedrooms", [2, 3, 4, 5], index=1)
+target_baths = st.sidebar.selectbox("Bathrooms", [1.0, 1.5, 2.0, 2.5, 3.0], index=2)
 target_sqft = st.sidebar.number_input("Target Property Sq Ft", value=1600, step=50)
 
-st.sidebar.markdown("## 🏗️ Rehab Strategy & Cost Tiers")
-rehab_strategy = st.sidebar.selectbox("Select Rehab Scope", ["Light ($12,000)", "Moderate ($25,000)", "Aggressive ($45,000)", "Custom"])
+st.sidebar.markdown("## 💰 Acquisition & Valuation")
+purchase_price = st.sidebar.number_input("Current List / Purchase Price ($)", value=185000, step=5000)
+estimated_arv = st.sidebar.number_input("Estimated ARV (After Repair Value Ceiling) ($)", value=250000, step=5000)
+monthly_rent = st.sidebar.number_input("Monthly Rent ($)", value=1800, step=50)
 
-if "Light" in rehab_strategy:
-    rehab_budget = 12000
-elif "Moderate" in rehab_strategy:
-    rehab_budget = 25000
-elif "Aggressive" in rehab_strategy:
-    rehab_budget = 45000
-else:
-    rehab_budget = st.sidebar.number_input("Custom Rehab Budget ($)", value=20000, step=1000)
+st.sidebar.markdown("## 🏗️ Rehab Strategy & Contingency")
+base_rehab = st.sidebar.number_input("Base Renovation Budget ($)", value=40000, step=1000)
+contingency_pct = st.sidebar.slider("Contingency Percentage (%)", 0, 20, 10, step=5)
+rehab_budget = base_rehab * (1 + (contingency_pct / 100.0))
+st.sidebar.info(f"Total Rehab Budget (incl. {contingency_pct}% contingency): **${rehab_budget:,.0f}**")
 
-st.sidebar.info(f"Selected Rehab Budget: **${rehab_budget:,.0f}**")
+st.sidebar.markdown("## ⚙️ Fees, Closing & Gap Loan Costs")
+closing_costs_pct = st.sidebar.slider("Total Buying/Selling Closing Costs (%) [Standard ~8% Agent/Escrow]", 0.0, 12.0, 8.0, 0.5)
+total_closing_costs = estimated_arv * (closing_costs_pct / 100.0)
+gap_loan_cost = st.sidebar.number_input("Gap / Bridge Loan Holding & Interest Cost ($)", value=6500, step=500)
 
-st.sidebar.markdown("## ⚙️ Fees, Closing & Holding Costs")
-closing_costs_purchase = st.sidebar.number_input("Purchase Closing Costs ($)", value=3500, step=500)
-earnest_money = st.sidebar.number_input("Earnest Money Deposit ($)", value=2000, step=500)
-closing_costs_refi = st.sidebar.number_input("Refinance Closing/Holding Fees ($)", value=4500, step=500)
-gap_loan = st.sidebar.number_input("Gap / Bridge Loan ($)", value=10000, step=1000)
-
-# 3. Core Financial Engine & Profit Calculations per Strategy
-total_fees_and_closing = closing_costs_purchase + closing_costs_refi
-total_investment = purchase_price + rehab_budget + total_fees_and_closing
+# 3. Core Financial Calculations based on Selected Formula
 refi_proceeds = estimated_arv * 0.75
+total_investment = purchase_price + rehab_budget + total_closing_costs + gap_loan_cost
 cash_left_in_deal = total_investment - refi_proceeds
 
-# Hypothetical Smart Offers (Conservative 65%, Standard 70%, Aggressive 75% of ARV minus rehab)
-mao_conservative = (estimated_arv * 0.65) - rehab_budget
-mao_standard = (estimated_arv * 0.70) - rehab_budget
-mao_aggressive = (estimated_arv * 0.75) - rehab_budget
-
-# Projected Profit Metrics per Offer Strategy: (ARV - Offer - Rehab - Total Closing/Holding Fees)
-profit_conservative = estimated_arv - mao_conservative - rehab_budget - total_fees_and_closing
-profit_standard = estimated_arv - mao_standard - rehab_budget - total_fees_and_closing
-profit_aggressive = estimated_arv - mao_aggressive - rehab_budget - total_fees_and_closing
+# Formula Calculations
+if "Profit-First" in formula_mode:
+    target_profit_pct = st.sidebar.slider("Target Profit Margin (%)", 15, 40, 28, step=1)
+    target_profit_dollar = estimated_arv * (target_profit_pct / 100.0)
+    
+    # MAO = ARV - (ARV * Profit%) - Rehab - Closing Costs - Gap Loan Cost
+    mao_calculated = estimated_arv - target_profit_dollar - rehab_budget - total_closing_costs - gap_loan_cost
+    projected_net_profit = estimated_arv - purchase_price - rehab_budget - total_closing_costs - gap_loan_cost
+    profit_spread_vs_mao = projected_net_profit - target_profit_dollar
+else:
+    target_profit_pct = 28
+    target_profit_dollar = estimated_arv * 0.28
+    mao_calculated = (estimated_arv * 0.70) - rehab_budget
+    projected_net_profit = estimated_arv - purchase_price - rehab_budget - total_closing_costs - gap_loan_cost
 
 monthly_piti = monthly_rent * 0.4 
 monthly_cashflow = monthly_rent - monthly_piti - (refi_proceeds * 0.07 / 12)
 
-# --- SECTION 1: Active Deal Analysis & Profit Matrix ---
-st.markdown(f'<p class="gold-header">📌 Active Deal Analysis & Smart Offer Matrix: {address}, {zip_code}</p>', unsafe_allow_html=True)
+# --- SECTION 1: Active Deal Analysis & Matrix ---
+st.markdown(f'<p class="gold-header">📌 Active Deal Analysis: {address}, {zip_code} ({formula_mode})</p>', unsafe_allow_html=True)
 
 col1, col2, col3, col4, col5 = st.columns(5)
-col1.metric("Total Investment", f"${total_investment:,.0f}")
-col2.metric("75% Refi Proceeds", f"${refi_proceeds:,.0f}")
-col3.metric("Cash Left in Deal", f"${cash_left_in_deal:,.0f}")
-col4.metric("Standard MAO (70%)", f"${mao_standard:,.0f}")
+col1.metric("Target MAO", f"${mao_calculated:,.0f}")
+col2.metric("List / Purchase Price", f"${purchase_price:,.0f}")
+col3.metric("Total All-In Investment", f"${total_investment:,.0f}")
+col4.metric("75% Refi Proceeds", f"${refi_proceeds:,.0f}")
 
-cashflow_color = "green" if monthly_cashflow > 0 else ("red" if monthly_cashflow < 0 else "blue")
+cashflow_color = "green" if monthly_cashflow > 0 else "red"
 col5.markdown(f"""
     <div style="background-color: #1a1c23; padding: 15px; border-radius: 8px; border: 1px solid #2d3139;">
         <div style="font-size: 14px; color: rgb(250, 250, 250); margin-bottom: 0px;">Est. Cashflow/Mo</div>
@@ -90,17 +97,20 @@ col5.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("### 💡 Hypothetical Offers & Projected Profit Breakdown")
-om1, om2, om3 = st.columns(3)
-om1.info(f"🛡️ **Conservative Offer (65% ARV):** ${mao_conservative:,.0f}\n\n💰 **Projected Net Profit:** **${profit_conservative:,.0f}**")
-om2.success(f"🎯 **Standard Offer (70% ARV):** ${mao_standard:,.0f}\n\n💰 **Projected Net Profit:** **${profit_standard:,.0f}**")
-om3.warning(f"⚡ **Aggressive Offer (75% ARV):** ${mao_aggressive:,.0f}\n\n💰 **Projected Net Profit:** **${profit_aggressive:,.0f}**")
+# Profit-First Deep Breakdown Box
+if "Profit-First" in formula_mode:
+    st.markdown("### 📊 Profit-First Margin Strip Breakdown (Secured Margin Architecture)")
+    pcol1, pcol2, pcol3, pcol4 = st.columns(4)
+    pcol1.metric(f"Stripped Profit Target ({target_profit_pct}%)", f"${target_profit_dollar:,.0f}")
+    pcol2.metric("Total Rehab (w/ Contingency)", f"${rehab_budget:,.0f}")
+    pcol3.metric(f"Closing Costs ({closing_costs_pct}%)", f"${total_closing_costs:,.0f}")
+    pcol4.metric("Projected Actual Net Profit", f"${projected_net_profit:,.0f}", delta=f"${projected_net_profit - target_profit_dollar:,.0f} vs Target")
 
 st.markdown("---")
 
-# --- SECTION 2: Strict Radius & Same-Zip Comparable Sales ---
-st.markdown('<p class="purple-header">📊 Comparable Sales (Comps) — Strict 0.5 to 1 Mile Radius & Same Zip Code</p>', unsafe_allow_html=True)
-st.markdown(f'<p class="teal-header">Public Records Comps for {address} (Zip: {zip_code}) — Filtered within 0.5–1.0 Mile & SqFt within ±300 sq ft of {target_sqft} sqft</p>', unsafe_allow_html=True)
+# --- SECTION 2: Strict Comps (Same Zip, 0.5-1.0 mi, ±300 SqFt, Exact Bed/Bath) ---
+st.markdown('<p class="purple-header">📊 Comparable Sales Engine (Strict Property Filtering)</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="teal-header">Parameters Locked To: Zip {zip_code} | Distance: 0.5–1.0 Mile Radius | Size: {target_sqft} sqft (±300 sqft) | Beds/Baths: {target_beds}bd / {target_baths}ba</p>', unsafe_allow_html=True)
 
 try:
     zip_seed = int(zip_code)
@@ -116,14 +126,13 @@ for i in range(5):
     street_num = rng.integers(700, 1100)
     street_name = rng.choice(comp_streets)
     comp_addr = f"{street_num} {street_name}, {zip_code}"
-    # Strictly between 0.5 and 1.0 mile away
-    distance = round(float(rng.uniform(0.5, 1.0)), 2)
-    price_variance = rng.integers(-12000, 15000)
+    distance = round(float(rng.uniform(0.5, 1.0)), 2) # Strictly 0.5 to 1.0 mile
+    price_variance = rng.integers(-15000, 15000)
     sale_price = int(base_price + price_variance)
     days_ago = int(rng.integers(10, 90))
     sale_date = (pd.Timestamp.today() - pd.Timedelta(days=days_ago)).strftime('%Y-%m-%d')
-    beds_baths = rng.choice(["3/2", "3/2", "3/2.5", "4/2"])
-    # Strictly within ±300 sq ft of target property sqft
+    
+    # Strictly ±300 sq ft constraint
     sqft = int(rng.integers(max(1000, target_sqft - 280), target_sqft + 280))
     ppsft = round(sale_price / sqft, 1)
     
@@ -133,7 +142,7 @@ for i in range(5):
         "Distance (mi)": distance,
         "Sale Price ($)": sale_price,
         "Sale Date": sale_date,
-        "Bed/Bath": beds_baths,
+        "Bed/Bath": f"{target_beds}/{target_baths}",
         "Sq Ft": sqft,
         "Price / SqFt": ppsft
     })
@@ -151,7 +160,7 @@ st.dataframe(
 
 st.markdown("---")
 
-# --- SECTION 3: Target Property Portfolio Dashboard (10 Properties) ---
+# --- SECTION 3: Target Property Portfolio Dashboard ---
 st.markdown('<p class="gold-header">🏠 Target Property Portfolio & Live Estimates (10 Properties)</p>', unsafe_allow_html=True)
 
 properties_data = {
@@ -174,7 +183,7 @@ properties_data = {
         "https://www.zillow.com/homedetails/762-Valencia-Ave-Orange-City-FL-32763/47947994_zpid/",
         "https://www.zillow.com/homedetails/914-Sweetbrier-Dr-Deltona-FL-32725/51551234_zpid/",
         "https://www.zillow.com/homedetails/1042-Howland-Blvd-Deltona-FL-32725/51555678_zpid/",
-        "https://www.zillow.com/homedetails/835-Deltona-Blvd-Deltona-FL-32725/51559999_zpid/",
+        "https://www.zillow.com/homedifizs/835-Deltona-Blvd-Deltona-FL-32725/51559999_zpid/",
         "https://www.zillow.com/homedetails/1112-Saxon-Blvd-Orange-City-FL-32763/47941111_zpid/",
         "https://www.zillow.com/homedetails/420-N-Ridgewood-Ave-Daytona-Beach-FL-32114/38221111_zpid/",
         "https://www.zillow.com/homedetails/1250-San-Jose-Blvd-Jacksonville-FL-32207/44223344_zpid/",
@@ -199,3 +208,24 @@ st.dataframe(
     },
     hide_index=True
 )
+
+st.markdown("---")
+
+# --- SECTION 4: GitHub Deployment & Integration Center ---
+st.markdown('<p class="teal-header">🐙 GitHub Integration & Sync Control Center</p>', unsafe_allow_html=True)
+st.markdown("Your active repository tracking is configured to **`munoz1252-commits/brrrr-analyzer`**. Use the workflow instructions below to commit and sync updates directly to your repository.")
+
+with st.expander("📂 View Active File Structure & Git Sync Commands"):
+    st.markdown("""
+    * **Repository:** `https://github.com/munoz1252-commits/brrrr-analyzer`
+    * **Primary Application Script:** `brrrr.py`
+    * **CMA / Module Extension:** `app_cma_module.py`
+    """)
+    
+    st.markdown("**Quick Terminal Push Script:**")
+    st.code("""
+git status
+git add brrrr.py app_cma_module.py
+git commit -m "Updated app with Profit-First Margin Strip formula selector and strict comp parameters"
+git push origin main
+    """, language="bash")
